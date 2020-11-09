@@ -1,0 +1,128 @@
+/*
+SQL to set up organization
+
+INSERT INTO location_region (location_id, data_region) VALUES (DEFAULT, ST_SetSRID(ST_MakePolygon( ST_GeomFromText('LINESTRING(75 29,77 29,77 29, 75 29)')), 4326));
+
+INSERT INTO location_region (location_id, data_region) VALUES (DEFAULT, ST_SetSRID(ST_MakePolygon( ST_GeomFromText('LINESTRING(75 29,77 29,77 29, 75 29)')), 4326));
+
+INSERT INTO location_region (location_id, data_region) VALUES (DEFAULT, ST_SetSRID(ST_MakePolygon( ST_GeomFromText('LINESTRING(75 29,77 29,77 29, 75 29)')), 4326));
+
+INSERT INTO item_country (item_id, data_country_name, location_region_id) VALUES (DEFAULT, 'United States of America', 1);
+
+INSERT INTO item_state (item_id, data_state_name, item_country_id, location_region_id) VALUES (DEFAULT, 'California', 1, 2);
+
+INSERT INTO item_county (item_id, data_county_name, item_state_id, data_fips_code, location_region_id) VALUES (DEFAULT, 'Los Angeles County', 1, 6037, 3);
+
+INSERT INTO item_city (item_id, data_city_name, item_county_id) VALUES (DEFAULT, 'Los Angeles', 1);
+
+INSERT INTO item_entity (item_id, data_entity_name, data_entity_address, item_city_id) VALUES (DEFAULT, 'UCLA', 'Los Angeles, CA 90095', 1);
+
+INSERT INTO item_organization (item_id, data_organization_name_text, data_organization_name_link, item_entity_id) VALUES (DEFAULT, 'Bruin Home Solutions', 'http://www.bruinhomesolutions.com/', 1);
+*/
+
+userInput = {
+	organization: 'Bruin Home Solutions',
+	fullName: 'John Smith',
+	passwordHash: 'pwdhashplaceholder',
+	email: 'jsmith@ucla.edu', // ID
+}
+
+catalogInput = {
+	title: 'BHS Toilet Audits', // ID?
+	description: 'Project to measure water and energy efficiency as well as other conditions of toilets throughout UCLA.', // nullable
+	isDiscoverable: true,
+}
+
+auditInput = {
+	name: 'BHS 11/8/20 South Campus Toilet Audit', // nullable?? Default?
+	user: 0,
+	timeCreated: '2020-11-08 14:55:23-07',
+}
+
+submissionInput = {
+	organizationName: 'Bruin Home Solutions', // use id instead? Otherwise, may need to use entity name as well.
+	// User token will be directly acquired by backend
+	timeSubmitted: '2020-11-08 14:57:08-07'
+	submissionName: null,
+	obsInputs: [obsInput]
+	auditID: 1,
+}
+
+obsInput = {
+	// Don't need to specify submission because obsInput objects will only ever be a part of submissionInput objects
+	featureName: 'toilet',
+  featureItem: itemInput,
+  
+	timeConducted: '2020-11-08 09:12:32-07'
+  commentary: 'This is test commentary for feature 1',
+  auditor: 'Harry Larry Carey',
+  
+	subfeatures: [],
+  
+	// Below columns depend on the specific feature=item type
+	// select * from metadata_column where metadata_item_id=(SELECT item_id from metadata_item where table_name='item_toilet');
+	// Exclude "universal" time conducted, commentary and auditor columns?
+  columnIDs: [50, 51, 52, 53, 54, 55, 56]
+  columnData: [2.4, 'good', 'Kohler', 'okay', 'okay', 'Zurn', 'good']
+}
+
+itemInput = {
+	// ID information only (attribute actually linked to obsInput)
+	columnIDs: [57, 8, 9]
+	columnData: [2080, 'Boelter Hall', 'UCLA']
+	// Assume item is existing
+}
+
+// As of Oct 8, it seems like subfeatures haven't been fully implemented yet
+
+subfeatureInput = {
+	subfeatureName: String,  // e.g. stall
+  timeConducted: String,
+  auditor: String,
+  commentary: String,
+  subfeatures: [list of subfeatureInput objects],
+  // Below columns depend on the specific subfeature
+  columnIDs: [Number, ...]
+  columnData: [dataObject, ...]
+}
+
+// select column_name, data_type from information_schema.columns where table_name='observation_toilet';
+
+// select * from metadata_column where metadata_item_id=(SELECT item_id from metadata_item where table_name='item_toilet');
+
+// Get ID columns for item_toilet
+// select column_id from metadata_column where table_name='item_toilet';
+// select referenced_item_id from m2m_metadata_item where item_id=(SELECT item_id from metadata_item where table_name='item_toilet') and is_id='t';
+
+// Get ID columns for item_room
+// select column_id from metadata_column where table_name='item_room';
+// select referenced_item_id from m2m_metadata_item where item_id=(SELECT item_id from metadata_item where table_name='item_room') and is_id='t';
+
+// Get ID columns for item_building
+// select column_id from metadata_column where table_name='item_building';
+// select referenced_item_id from m2m_metadata_item where item_id=(SELECT item_id from metadata_item where table_name='item_building') and is_id='t';
+
+// Get ID columns for item_entity
+// select column_id from metadata_column where table_name='item_entity';
+// select referenced_item_id from m2m_metadata_item where item_id=(SELECT item_id from metadata_item where table_name='item_entity') and is_id='t';
+// returns no rows, so that's end of item hierarchy
+
+
+/*
+v4=# select * from metadata_column where metadata_item_id=(SELECT item_id from metadata_item where table_name='item_toilet');
+ column_id |     column_name     |             table_name             | observation_table_name | metadata_item_id | is_default | is_nullable |        frontend_name         | filter_selector | input_selector | frontend_type | info | accuracy | sql_type | reference_type
+-----------+---------------------+------------------------------------+------------------------+------------------+------------+-------------+------------------------------+-----------------+----------------+---------------+----------------------------------------------
+        30 | data_time_conducted | observation_toilet                 |                        |               14 | t          | f         | Date Conducted               |               3 |              4 |             2 | Date the feature was audited   
+        35 | data_commentary     | observation_toilet                 |                        |               14 | t          | t         | Commentary                   |                 |              9 |             1 | Additional commentary about the observation 
+        40 | data_auditor        | observation_toilet                 |                        |               14 | t          | f         | Auditor Name                 |                 |                |             1 | Name of the auditor(s) who conducted this observation
+        45 | data_name           | observation_toilet                 |                        |               14 | t          | f         | Standard Operating Procedure |               8 |              8 |             1 | The standard operating procedure(s) used for the audit on this feature
+        50 | data_gpf            | observation_toilet                 | observation_toilet     |               14 | t          | f         | Gallons Per Flush            |               1 |              2 |             1 |        |          |        2 |              6
+        51 | data_element        | list_toilet_stall_condition        |                        |               14 | t          | t         | Stall Condition              |               6 |              6 |             1 |        |          |        1 |              8
+        52 | data_attribute      | attribute_toilet_basin_brand       |                        |               14 | t          | t         | Basin Brand                  |               8 |              6 |             1 |        |          |        1 |             11
+        53 | data_element        | list_toilet_basin_condition        |                        |               14 | t          | t         | Basin Condition              |               6 |              6 |             1 |        |          |        1 |              8
+        54 | data_element        | list_toilet_sensor_condition       |                        |               14 | t          | t         | Sensor Condition             |               6 |              6 |             1 |        |          |        1 |              8
+        55 | data_attribute      | attribute_toilet_flushometer_brand |                        |               14 | t          | t         | Flushometer Brand            |               8 |              6 |             1 |        |          |        1 |             11
+        56 | data_element        | list_toilet_flushometer_condition  |                        |               14 | t          | t         | Flushometer Condition        |               6 |              6 |             1 |
+    |          |        1 |              8
+(11 rows)
+*/

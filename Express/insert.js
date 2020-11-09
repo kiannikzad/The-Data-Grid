@@ -1,5 +1,5 @@
 //import * from './tdg_utils.mjs'
-/*
+
 // SETUP //
 // ============================================================
 const pgp = require("pg-promise")();
@@ -8,7 +8,7 @@ const cn = { // connection info
     port: 5432,
     database: 'meta',
     user: 'postgres',
-    password: null,
+    password: 'cherry',
     max: 5 // use up to 5 connections
 };
 
@@ -534,8 +534,6 @@ let input = {
 module.exports = { //exporting data and item insertion
     insertAudit
 }
-
-*/
 
 // trash
 // with new_id as (insert into item_blah values (default, 1, 2) on conflict (data_clockwise_number, data_another_number) do nothing returning item_id) select * from new_id union (select item_id from item_blah where data_clockwise_number=1 and data_another_number=2);
