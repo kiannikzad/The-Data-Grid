@@ -44,6 +44,19 @@ CREATE FUNCTION get_item_id_c1 (item_table_name TEXT, mcol_id INT, colval ANYELE
 		END
 	$$ LANGUAGE plpgsql;
 
+-- Same but accept column name directly
+-- Necessary for ID columns which are not data columns
+CREATE FUNCTION get_item_id_c1 (item_table_name TEXT, mcol_name TEXT, colval ANYELEMENT)
+	RETURNS INT AS
+	$$
+		DECLARE
+			id INT;
+		BEGIN
+			EXECUTE FORMAT('SELECT item_id FROM %I WHERE %I=%L', item_table_name, mcol_name, colval) INTO id;
+			RETURN id;
+		END
+	$$ LANGUAGE plpgsql;
+
 -- Returns id corresponding to item with given 2 ID column values
 CREATE FUNCTION get_item_id_c2 (item_table_name TEXT, mcol_id1 INT, colval1 ANYELEMENT, mcol_id2 INT, colval2 ANYELEMENT)
 	RETURNS INT AS
@@ -51,6 +64,19 @@ CREATE FUNCTION get_item_id_c2 (item_table_name TEXT, mcol_id1 INT, colval1 ANYE
 		DECLARE
 			mcol_name1 TEXT := (SELECT get_mcol_name(mcol_id1));
 			mcol_name2 TEXT := (SELECT get_mcol_name(mcol_id2));
+			id INT;
+		BEGIN
+			EXECUTE FORMAT('SELECT item_id FROM %I WHERE %I=%L AND %I=%L', item_table_name, mcol_name1, colval1, mcol_name2, colval2) INTO id;
+			RETURN id;
+		END
+	$$ LANGUAGE plpgsql;
+
+-- Same but accept column names directly
+-- Necessary for ID columns which are not data columns
+CREATE FUNCTION get_item_id_c2 (item_table_name TEXT, mcol_name1 TEXT, colval1 ANYELEMENT, mcol_name2 TEXT, colval2 ANYELEMENT)
+	RETURNS INT AS
+	$$
+		DECLARE
 			id INT;
 		BEGIN
 			EXECUTE FORMAT('SELECT item_id FROM %I WHERE %I=%L AND %I=%L', item_table_name, mcol_name1, colval1, mcol_name2, colval2) INTO id;
