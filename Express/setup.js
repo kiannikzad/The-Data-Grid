@@ -7,7 +7,8 @@
 
 // Database connection and SQL formatter
 const postgresClient = require('./db/pg.js');
-const syncdb = postgresClient.connect('setup')
+postgresClient.connect('setup')
+let syncdb = postgresClient.connections('setup')
 const formatSQL = postgresClient.format;
 
 // QUERIES //
@@ -28,9 +29,9 @@ itemM2M = syncdb.querySync(itemM2M);
 frontendTypes = syncdb.querySync(frontendTypes);
 allFeatures = syncdb.querySync(allFeatures);
 
-// close the database connection
+// disconnect from database
 syncdb.end();
-console.log('Setup database queries complete, disconnected from database');
+postgresClient.disconnect('setup');
 
 
 // RETURNABLE ID CLASS

@@ -1,6 +1,6 @@
 // Database connection and SQL formatter
 const postgresClient = require('../db/pg.js');
-const db = postgresClient.connect('main')
+const db = postgresClient.connections('main')
 const formatSQL = postgresClient.format;
 
 /*

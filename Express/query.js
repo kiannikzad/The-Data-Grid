@@ -24,7 +24,8 @@ const {returnableIDLookup, featureParents, setupObject} = require('./setup.js')
 
 // Database connection and SQL formatter
 const postgresClient = require('./db/pg.js');
-const db = postgresClient.connect('main')
+postgresClient.connect('main')
+let db = postgresClient.connections('main')
 const formatSQL = postgresClient.format;
 
 // Testing request response cycle time (for dev only)

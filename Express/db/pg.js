@@ -10,14 +10,36 @@ pgp.pg.types.setTypeParser(1184, require('../parse.js').timestamptzParse) //Pars
 var tdgdbname = 'v4';
 var tdgdbuser = 'postgres';
 
+postgresConnections = [];
+
+
 const postgresClient = {
+    connections: async (type) => {
+        return postgresConnections.filter(conn => conn.type == type).map(conn => conn.db)[0];
+    },
+    disconnect: (type) => {
+        switch(type) {
+            case 'setup':
+
+                let index = postgresConnections.map(conn => conn.type).indexOf(type);
+                postgresConnections.splice(index, 1)
+                console.log('Setup database queries complete, disconnected from database');
+                return
+            case 'main':
+            case 'construct':
+        };
+    },
     connect: type => {
         console.log(`New PostgreSQL Connection: ${type}`)
         switch(type) {
             case 'setup':
                 let syncdb = new SyncClient;
                 syncdb.connectSync(`host=localhost port=5432 dbname=${tdgdbname} connect_timeout=5 user=${tdgdbuser}`);
-                return syncdb;
+                postgresConnections.push({
+                    db: syncdb,
+                    type: type,
+                    created: Date.now()
+                });
             case 'main':
                 // Default runtime database connection
                 const defaultConnection = { //connection info
@@ -28,7 +50,12 @@ const postgresClient = {
                     password: null,
                     max: 30 // use up to 30 connections
                 };
-                return pgp(defaultConnection);
+                let db = pgp(defaultConnection);
+                postgresConnections.push({
+                    db: db,
+                    type: type,
+                    created: Date.now()
+                });
             case 'construct':
                 // Schema construction CLI database connection
                 const constructionConnection = { 
