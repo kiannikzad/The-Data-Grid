@@ -619,6 +619,26 @@ CREATE TABLE metadata_feature (
 );
 
 
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL
+);
+
+insert into users 
+    (
+        id,
+        name,
+        email,
+        password,
+        role
+    )
+    values 
+        (default, 'veronica', 'veronica@gmail.com', 'example', 'user'),
+        (default, 'edward', 'ed@gmail.com', 'example', 'superuser');
+
 
 /* ----------------------------------------------------------------------------------------------------------                                                                                                          
                                          ,,                                                                     

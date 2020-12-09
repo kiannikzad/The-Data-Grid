@@ -6,16 +6,21 @@ const cors = require('cors');
 const https = require('https');
 const fs = require('fs');
 const port = process.env.PORT || 4001;
-const insertTry = require('./insert/try.js');
 
+// start the main connection pool
+const {connectPostgreSQL} = require('./db/pg.js');
+connectPostgreSQL('default');
+
+const insertTry = require('./insert/try.js');
 const parse = require('./parse.js');
 const validate = require('./validate.js')
 const query = require('./query.js');
 const insert = require('./insert.js');
 const template = require('./template.js');
+const router = require('./auth/login.js');
 
 app.use(cors());
-app.use(bodyParser.json());
+// app.use(bodyParser.json()); shouldn't need
 
 // middleware
 app.use(express.json()); 
@@ -41,7 +46,7 @@ function cycleTimer(req, res, next) {
 }
 
 //** Data Query **//
-app.get('/api/audit/observation/:feature/:include', cycleTimer, parse.queryParse, validate.validateAudit, query.featureQuery, query.sendData); 
+app.get('/api/audit/observation/:feature/:include', router, cycleTimer, parse.queryParse, validate.validateAudit, query.featureQuery, query.sendData); 
 
 //** Dropdown Query **/
 //app.get('/api/audit/dropdown/:feature/:include', cycleTimer, parse.queryParse, validate.validateAudit, query.featureQuery, query.returnDropdown)
@@ -59,8 +64,10 @@ app.get('/api/template/', parse.templateParse, template.makeTemplate); // makeTe
 app.get('/api/stats/', parse.statsParse, query.statsQuery);
 
 // Easter Egg
-app.get('/api/coffee', (req, res) => res.status(418).send(`<center><h3><a href="https://tools.ietf.org/html/rfc2324#section-2.3.2">418 I\'m a teapot</a></h3></center><hr><center><small>&copy TDG ${new Date().getFullYear()}</small></center>`))
+app.get('/api/coffee', router, (req, res) => res.status(418).send(`<center><h3><a href="https://tools.ietf.org/html/rfc2324#section-2.3.2">418 I\'m a teapot</a></h3></center><hr><center><small>&copy TDG ${new Date().getFullYear()}</small></center>`))
 
+// Login 
+app.use('/auth', router);
 
 app.listen(port, () => console.log(`TDG Backend Node.js server is running on port ${port}`))
 
